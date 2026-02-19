@@ -10,7 +10,38 @@ CLI for controlling BambuLab printers directly over MQTT/FTPS/camera.
 go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@latest
 ```
 
-Make sure `$GOPATH/bin` or `$GOBIN` is in your `PATH`.
+If `@latest` resolves to an older commit, use:
+
+```bash
+GOPROXY=direct go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@master
+```
+
+or pin a commit:
+
+```bash
+GOPROXY=direct go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@<commit>
+```
+
+### macOS setup
+
+```bash
+# 1) Install Go (if needed)
+brew install go
+
+# 2) Install babu-cli
+go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@latest
+
+# 3) Add Go bin to PATH
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+source ~/.zshrc
+hash -r
+
+# 4) Verify
+which babu-cli
+babu-cli --help
+```
+
+If you use `GOBIN`, add that path instead of `$(go env GOPATH)/bin`.
 
 ### Download pre-built binaries
 
@@ -41,9 +72,32 @@ babu-cli print start ./benchy.3mf --plate 1
 
 ## Config
 
-- User config: `~/.config/bambu/config.json`
+- User config: `<os.UserConfigDir>/bambu/config.json`
+  - macOS usually: `~/Library/Application Support/bambu/config.json`
+  - Linux usually: `~/.config/bambu/config.json`
+  - Windows usually: `%AppData%\bambu\config.json`
 - Project config: `./.bambu.json`
 - Precedence: flags > env > project config > user config
+- Missing config file is treated as empty; it is created on first `config set`.
+
+### Expected config format
+
+`babu-cli` expects `default_profile` + `profiles`. Example:
+
+```json
+{
+  "default_profile": "lab",
+  "profiles": {
+    "lab": {
+      "ip": "192.168.11.234",
+      "serial": "0300DA610705389",
+      "access_code_file": "/absolute/path/to/lab.code"
+    }
+  }
+}
+```
+
+Note: configs using `machines`, `token`, etc. are from other tools and are not read by `babu-cli`.
 
 ### Access code
 
@@ -68,6 +122,40 @@ In Bambu Studio on macOS: open the Device view for your printer, open its settin
 - `BAMBU_MQTT_PORT`
 - `BAMBU_FTP_PORT`
 - `BAMBU_CAMERA_PORT`
+
+## Troubleshooting
+
+### `zsh: command not found: babu-cli`
+
+`go install` likely succeeded but your shell `PATH` does not include Go bin.
+
+```bash
+go env GOBIN
+go env GOPATH
+ls -l "$(go env GOPATH)/bin" | grep babu-cli
+```
+
+Then add the correct bin path to `PATH` in `~/.zshrc`.
+
+### `access code file not set`
+
+This means no access code source was resolved for the active profile.
+
+Resolution order:
+- `--access-code-file`
+- `BAMBU_ACCESS_CODE_FILE`
+- `profiles.<name>.access_code_file`
+
+Profile selection order:
+- `--printer`
+- `BAMBU_PROFILE`
+- `default_profile`
+
+Set it explicitly:
+
+```bash
+babu-cli config set --printer lab --access-code-file ~/.config/bambu/lab.code --default
+```
 
 ## Notes
 
