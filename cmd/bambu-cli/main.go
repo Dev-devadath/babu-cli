@@ -545,7 +545,7 @@ func cmdPrintStart(gf GlobalFlags, args []string) int {
 	noAMS := fs.Bool("no-ams", false, "disable AMS")
 	amsMapping := fs.String("ams-mapping", "0", "comma-separated AMS mapping")
 	skipObjects := fs.String("skip-objects", "", "comma-separated object IDs")
-	flowCalibration := fs.Bool("flow-calibration", true, "enable flow calibration")
+	flowCalibration := fs.Bool("flow-calibration", false, "enable flow calibration")
 	remoteName := fs.String("remote-name", "", "remote filename")
 	if err := fs.Parse(args); err != nil {
 		return errExit(err)

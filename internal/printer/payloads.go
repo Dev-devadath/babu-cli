@@ -40,7 +40,7 @@ func PayloadStartPrint(filename string, plateLocation string, useAMS bool, amsMa
 			"command":        "project_file",
 			"param":          plateLocation,
 			"file":           filename,
-			"bed_leveling":   true,
+			"bed_leveling":   false,
 			"bed_type":       "textured_plate",
 			"flow_cali":      flowCalibration,
 			"vibration_cali": true,

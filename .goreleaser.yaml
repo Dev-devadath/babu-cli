@@ -32,10 +32,10 @@ checksum:
 
 brews:
   - name: bambu-cli
-    homepage: https://github.com/tobiasbischoff/bambu-cli
+    homepage: https://github.com/Dev-devadath/babu-cli
     description: CLI for controlling BambuLab printers directly over MQTT/FTPS/camera.
     repository:
-      owner: tobiasbischoff
+      owner: Dev-devadath
       name: homebrew-tap
       branch: main
       token: "{{ .Env.GORELEASER_TOKEN }}"
@@ -45,5 +45,5 @@ brews:
 
 release:
   github:
-    owner: tobiasbischoff
-    name: bambu-cli
+    owner: Dev-devadath
+    name: babu-cli
