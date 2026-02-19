@@ -157,6 +157,15 @@ Set it explicitly:
 babu-cli config set --printer lab --access-code-file ~/.config/bambu/lab.code --default
 ```
 
+### Print starts but pauses with filament errors
+
+If the job starts heating/extruding and then pauses with filament-related prompts, check AMS mode.
+
+- Default behavior uses AMS (`--no-ams` not set).
+- `--no-ams` disables AMS usage for that print and may skip AMS-related filament validation/check flows.
+
+Use `--no-ams` only when printing from an external spool/manual feed path that matches your loaded filament.
+
 ## Notes
 
 - Printer must be reachable on ports 8883 (MQTT), 990 (FTPS), 6000 (camera).
