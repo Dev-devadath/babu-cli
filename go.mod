@@ -1,4 +1,4 @@
-module bambu-cli
+module github.com/Dev-devadath/babu-cli
 
 go 1.22
 

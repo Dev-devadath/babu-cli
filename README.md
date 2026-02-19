@@ -1,28 +1,42 @@
-# bambu-cli
+# babu-cli
 
 CLI for controlling BambuLab printers directly over MQTT/FTPS/camera.
 
-## Build
+## Install
+
+### Using Go install
 
 ```bash
-go build -o bambu-cli ./cmd/bambu-cli
+go install github.com/Dev-devadath/babu-cli/cmd/bambu-cli@latest
+```
+
+Make sure `$GOPATH/bin` or `$GOBIN` is in your `PATH`.
+
+### Download pre-built binaries
+
+Download the latest release from [GitHub Releases](https://github.com/Dev-devadath/babu-cli/releases) and extract the binary for your platform.
+
+### Build from source
+
+```bash
+go build -o babu-cli ./cmd/bambu-cli
 ```
 
 ## Quick start
 
 ```bash
 # Create a profile
-bambu-cli config set --printer lab \
+babu-cli config set --printer lab \
   --ip 192.168.1.200 \
   --serial AC12309BH109 \
   --access-code-file ~/.config/bambu/lab.code \
   --default
 
 # Status
-bambu-cli status
+babu-cli status
 
 # Start a print
-bambu-cli print start ./benchy.3mf --plate 1
+babu-cli print start ./benchy.3mf --plate 1
 ```
 
 ## Config

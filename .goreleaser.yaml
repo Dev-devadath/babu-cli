@@ -1,14 +1,14 @@
 version: 2
-project_name: bambu-cli
+project_name: babu-cli
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: bambu-cli
+  - id: babu-cli
     main: ./cmd/bambu-cli
-    binary: bambu-cli
+    binary: babu-cli
     env:
       - CGO_ENABLED=0
     goos:
@@ -31,7 +31,7 @@ checksum:
   name_template: "checksums.txt"
 
 brews:
-  - name: bambu-cli
+  - name: babu-cli
     homepage: https://github.com/Dev-devadath/babu-cli
     description: CLI for controlling BambuLab printers directly over MQTT/FTPS/camera.
     repository:
@@ -41,7 +41,7 @@ brews:
       token: "{{ .Env.GORELEASER_TOKEN }}"
     directory: Formula
     test: |
-      system "#{bin}/bambu-cli", "--help"
+      system "#{bin}/babu-cli", "--help"
 
 release:
   github:

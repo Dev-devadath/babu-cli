@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"bambu-cli/internal/config"
-	"bambu-cli/internal/output"
-	"bambu-cli/internal/printer"
-	"bambu-cli/internal/ui"
+	"github.com/Dev-devadath/babu-cli/internal/config"
+	"github.com/Dev-devadath/babu-cli/internal/output"
+	"github.com/Dev-devadath/babu-cli/internal/printer"
+	"github.com/Dev-devadath/babu-cli/internal/ui"
 )
 
 var version = "dev"
@@ -126,7 +126,7 @@ func run(args []string) int {
 }
 
 func parseGlobalFlags(args []string) (GlobalFlags, []string, error) {
-	fs := flag.NewFlagSet("bambu-cli", flag.ContinueOnError)
+	fs := flag.NewFlagSet("babu-cli", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 
 	var gf GlobalFlags
@@ -1576,10 +1576,10 @@ func exitOnErr(err error) int {
 }
 
 func printUsage() {
-	fmt.Fprintln(os.Stdout, "bambu-cli - control and monitor BambuLab printers")
+	fmt.Fprintln(os.Stdout, "babu-cli - control and monitor BambuLab printers")
 	fmt.Fprintln(os.Stdout, "")
 	fmt.Fprintln(os.Stdout, "USAGE:")
-	fmt.Fprintln(os.Stdout, "  bambu-cli [global flags] <command> [args]")
+	fmt.Fprintln(os.Stdout, "  babu-cli [global flags] <command> [args]")
 	fmt.Fprintln(os.Stdout, "")
 	fmt.Fprintln(os.Stdout, "COMMANDS:")
 	fmt.Fprintln(os.Stdout, "  status                Show printer status")
@@ -1624,39 +1624,39 @@ func printUsage() {
 func printCommandUsage(cmd string) {
 	switch cmd {
 	case "status":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli status")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli status")
 	case "watch":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli watch [--interval <seconds>] [--refresh]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli watch [--interval <seconds>] [--refresh]")
 	case "light":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli light on|off|status")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli light on|off|status")
 	case "temps":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli temps get|set [--bed <C>] [--nozzle <C>] [--chamber <C>]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli temps get|set [--bed <C>] [--nozzle <C>] [--chamber <C>]")
 	case "print":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli print start <file> [--plate <n|path>] [--no-upload]")
-		fmt.Fprintln(os.Stdout, "       bambu-cli print pause|resume|stop")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli print start <file> [--plate <n|path>] [--no-upload]")
+		fmt.Fprintln(os.Stdout, "       babu-cli print pause|resume|stop")
 	case "files":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli files list [--dir <path>]")
-		fmt.Fprintln(os.Stdout, "       bambu-cli files upload <local> [--as <remote>]")
-		fmt.Fprintln(os.Stdout, "       bambu-cli files download <remote> --out <path|->")
-		fmt.Fprintln(os.Stdout, "       bambu-cli files delete <remote>")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli files list [--dir <path>]")
+		fmt.Fprintln(os.Stdout, "       babu-cli files upload <local> [--as <remote>]")
+		fmt.Fprintln(os.Stdout, "       babu-cli files download <remote> --out <path|->")
+		fmt.Fprintln(os.Stdout, "       babu-cli files delete <remote>")
 	case "camera":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli camera snapshot [--out <path|->]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli camera snapshot [--out <path|->]")
 	case "gcode":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli gcode send <line...> | --stdin")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli gcode send <line...> | --stdin")
 	case "ams":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli ams status")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli ams status")
 	case "calibrate":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli calibrate [--no-bed-level] [--no-motor-noise] [--no-vibration]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli calibrate [--no-bed-level] [--no-motor-noise] [--no-vibration]")
 	case "home":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli home")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli home")
 	case "move":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli move z --height <0-256>")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli move z --height <0-256>")
 	case "fans":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli fans set [--part <0-255|0-1>] [--aux <0-255|0-1>] [--chamber <0-255|0-1>]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli fans set [--part <0-255|0-1>] [--aux <0-255|0-1>] [--chamber <0-255|0-1>]")
 	case "reboot":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli reboot")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli reboot")
 	case "config":
-		fmt.Fprintln(os.Stdout, "USAGE: bambu-cli config list|get|set|remove")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli config list|get|set|remove")
 	default:
 		printUsage()
 	}

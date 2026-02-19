@@ -8,7 +8,7 @@
 - `README.md` — usage and configuration overview.
 
 ## Build, Test, and Development Commands
-- `go build -o bambu-cli ./cmd/bambu-cli` — build the CLI binary.
+- `go build -o babu-cli ./cmd/bambu-cli` — build the CLI binary.
 - `go run ./cmd/bambu-cli --help` — run locally without installing.
 - `go test ./...` — run all Go tests (currently no test files; add as you go).
 
@@ -32,4 +32,4 @@
 ## Security & Configuration Tips
 - Never accept access codes via CLI flags; use `--access-code-file` or `--access-code-stdin`.
 - Default config lives at `~/.config/bambu/config.json` with optional project config `./.bambu.json`.
-- Network defaults: MQTT 8883, FTPS 990, Camera 6000. Use `bambu-cli doctor` to verify reachability.
+- Network defaults: MQTT 8883, FTPS 990, Camera 6000. Use `babu-cli doctor` to verify reachability.

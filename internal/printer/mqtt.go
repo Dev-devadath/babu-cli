@@ -41,7 +41,7 @@ func NewMQTTClient(ip, accessCode, serial, username string, port int, timeout ti
 	opts.AddBroker(fmt.Sprintf("tls://%s:%d", ip, port))
 	opts.SetUsername(username)
 	opts.SetPassword(accessCode)
-	opts.SetClientID(fmt.Sprintf("bambu-cli-%d", time.Now().UnixNano()))
+	opts.SetClientID(fmt.Sprintf("babu-cli-%d", time.Now().UnixNano()))
 	opts.SetConnectTimeout(timeout)
 	opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
 	opts.SetAutoReconnect(true)
