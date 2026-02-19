@@ -7,7 +7,7 @@ CLI for controlling BambuLab printers directly over MQTT/FTPS/camera.
 ### Using Go install
 
 ```bash
-go install github.com/Dev-devadath/babu-cli/cmd/bambu-cli@latest
+go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@latest
 ```
 
 Make sure `$GOPATH/bin` or `$GOBIN` is in your `PATH`.
@@ -19,7 +19,7 @@ Download the latest release from [GitHub Releases](https://github.com/Dev-devada
 ### Build from source
 
 ```bash
-go build -o babu-cli ./cmd/bambu-cli
+go build -o babu-cli ./cmd/babu-cli
 ```
 
 ## Quick start

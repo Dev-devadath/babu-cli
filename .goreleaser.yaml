@@ -7,7 +7,7 @@ before:
 
 builds:
   - id: babu-cli
-    main: ./cmd/bambu-cli
+    main: ./cmd/babu-cli
     binary: babu-cli
     env:
       - CGO_ENABLED=0
