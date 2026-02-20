@@ -70,6 +70,42 @@ babu-cli status
 babu-cli print start ./benchy.3mf --plate 1
 ```
 
+## Print and File Commands
+
+```bash
+# List files on printer storage
+babu-cli files list
+babu-cli files list --dir cache
+
+# Upload local file to printer storage
+babu-cli files upload ./benchy.3mf
+babu-cli files upload ./benchy.3mf --as cache/benchy.3mf
+
+# Download file from printer storage
+babu-cli files download cache/benchy.3mf --out ./benchy-copy.3mf
+
+# Delete file from printer storage
+babu-cli files delete cache/benchy.3mf
+```
+
+```bash
+# Start print from local file (uploads first, then starts)
+babu-cli print start ./benchy.3mf --plate 1
+
+# Start print from file already on printer (no upload)
+babu-cli print start --no-upload --plate 1 "cache/benchy.3mf"
+
+# Print controls
+babu-cli print pause
+babu-cli print resume
+babu-cli print stop
+```
+
+Notes:
+- Use `.3mf` for `print start --no-upload`.
+- Keep flags before the filename (for example: `print start --no-upload --plate 1 "file.3mf"`).
+- `--plate 1` maps to `Metadata/plate_1.gcode` inside the 3MF.
+
 ## Config
 
 - User config: `<os.UserConfigDir>/bambu/config.json`
