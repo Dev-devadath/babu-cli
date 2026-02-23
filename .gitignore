@@ -1,2 +1,11 @@
 dist/
 .DS_Store
+
+# Local build outputs
+babu-cli
+babu-cli.exe
+babu-cli-new.exe
+*.exe
+
+# Local debug print artifacts
+_debug_*
