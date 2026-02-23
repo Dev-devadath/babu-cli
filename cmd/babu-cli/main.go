@@ -542,8 +542,9 @@ func cmdPrintStart(gf GlobalFlags, args []string) int {
 	fs.SetOutput(io.Discard)
 	plate := fs.String("plate", "1", "plate number or gcode path")
 	noUpload := fs.Bool("no-upload", false, "do not upload file")
+	amsMode := fs.String("ams", "auto", "AMS mode: auto|on|off")
 	noAMS := fs.Bool("no-ams", false, "disable AMS")
-	amsMapping := fs.String("ams-mapping", "0", "comma-separated AMS mapping")
+	amsMapping := fs.String("ams-mapping", "", "comma-separated AMS mapping")
 	skipObjects := fs.String("skip-objects", "", "comma-separated object IDs")
 	flowCalibration := fs.Bool("flow-calibration", false, "enable flow calibration")
 	remoteName := fs.String("remote-name", "", "remote filename")
@@ -566,10 +567,16 @@ func cmdPrintStart(gf GlobalFlags, args []string) int {
 	}
 
 	plateLocation := plateToLocation(*plate)
-	useAMS := !*noAMS
-	mapping, err := parseIntList(*amsMapping)
+	mode, err := parseAMSMode(*amsMode)
 	if err != nil {
 		return errExit(err)
+	}
+	useAMS, mapping, err := resolvePrintAMSSettings(res, mode, *noAMS, *amsMapping)
+	if err != nil {
+		return errExit(err)
+	}
+	if gf.Verbose {
+		fmt.Fprintf(os.Stderr, "AMS mode=%s use_ams=%t ams_mapping=%v\n", mode, useAMS, mapping)
 	}
 	var skipList []int
 	if *skipObjects != "" {
@@ -1632,7 +1639,7 @@ func printCommandUsage(cmd string) {
 	case "temps":
 		fmt.Fprintln(os.Stdout, "USAGE: babu-cli temps get|set [--bed <C>] [--nozzle <C>] [--chamber <C>]")
 	case "print":
-		fmt.Fprintln(os.Stdout, "USAGE: babu-cli print start <file> [--plate <n|path>] [--no-upload]")
+		fmt.Fprintln(os.Stdout, "USAGE: babu-cli print start <file> [--plate <n|path>] [--no-upload] [--ams <auto|on|off>] [--ams-mapping <list>] [--no-ams]")
 		fmt.Fprintln(os.Stdout, "       babu-cli print pause|resume|stop")
 	case "files":
 		fmt.Fprintln(os.Stdout, "USAGE: babu-cli files list [--dir <path>]")

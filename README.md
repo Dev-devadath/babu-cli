@@ -53,6 +53,54 @@ Download the latest release from [GitHub Releases](https://github.com/Dev-devada
 go build -o babu-cli ./cmd/babu-cli
 ```
 
+## Update
+
+When a new feature is pushed, update `babu-cli` using the same method you used to install it.
+
+### Update with Go install (recommended)
+
+macOS:
+
+```bash
+go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@latest
+hash -r
+babu-cli --help
+```
+
+Windows (PowerShell):
+
+```powershell
+go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@latest
+Get-Command babu-cli
+babu-cli --help
+```
+
+If `@latest` resolves to an older commit, use:
+
+macOS/Linux:
+
+```bash
+GOPROXY=direct go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@master
+```
+
+Windows (PowerShell):
+
+```powershell
+$env:GOPROXY = "direct"
+go install github.com/Dev-devadath/babu-cli/cmd/babu-cli@master
+```
+
+### Update pre-built binaries
+
+1. Download the newest archive from [GitHub Releases](https://github.com/Dev-devadath/babu-cli/releases).
+2. Extract it.
+3. Replace your existing `babu-cli` binary (`babu-cli.exe` on Windows) in your `PATH`.
+4. Open a new terminal and run:
+
+```bash
+babu-cli --help
+```
+
 ## Quick start
 
 ```bash
@@ -197,8 +245,11 @@ babu-cli config set --printer lab --access-code-file ~/.config/bambu/lab.code --
 
 If the job starts heating/extruding and then pauses with filament-related prompts, check AMS mode.
 
-- Default behavior uses AMS (`--no-ams` not set).
-- `--no-ams` disables AMS usage for that print and may skip AMS-related filament validation/check flows.
+- Default behavior is `--ams auto`.
+  - If AMS is not detected, the print starts with `use_ams=false`.
+  - If AMS is detected, the CLI tries to auto-select loaded tray IDs for `ams_mapping`.
+- Use `--ams on` to force AMS mode (optionally with `--ams-mapping`).
+- Use `--ams off` or `--no-ams` to disable AMS for that print.
 
 Use `--no-ams` only when printing from an external spool/manual feed path that matches your loaded filament.
 
