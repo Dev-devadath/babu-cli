@@ -104,11 +104,17 @@ babu-cli --help
 ## Quick start
 
 ```bash
-# Create a profile
+# Create a working default profile (uses profile name "default")
+babu-cli config set \
+  --ip 192.168.1.200 \
+  --serial AC12309BH109 \
+  --access-code YOUR_ACCESS_CODE
+
+# Optional: use a named profile
 babu-cli config set --printer lab \
   --ip 192.168.1.200 \
   --serial AC12309BH109 \
-  --access-code-file ~/.config/bambu/lab.code \
+  --access-code YOUR_ACCESS_CODE \
   --default
 
 # Status
@@ -175,7 +181,7 @@ Notes:
     "lab": {
       "ip": "192.168.11.234",
       "serial": "0300DA610705389",
-      "access_code_file": "/absolute/path/to/lab.code"
+      "access_code": "YOUR_ACCESS_CODE"
     }
   }
 }
@@ -185,7 +191,13 @@ Note: configs using `machines`, `token`, etc. are from other tools and are not r
 
 ### Access code
 
-Get the printer access code from the device or Bambu Studio, then store it in a file:
+Get the printer access code from the device or Bambu Studio, then set it directly:
+
+```bash
+babu-cli config set --ip 192.168.1.200 --serial AC12309BH109 --access-code YOUR_ACCESS_CODE
+```
+
+Or use a file if you prefer:
 
 ```bash
 mkdir -p ~/.config/bambu
@@ -200,6 +212,7 @@ In Bambu Studio on macOS: open the Device view for your printer, open its settin
 - `BAMBU_PROFILE`
 - `BAMBU_IP`
 - `BAMBU_SERIAL`
+- `BAMBU_ACCESS_CODE`
 - `BAMBU_ACCESS_CODE_FILE`
 - `BAMBU_TIMEOUT`
 - `BAMBU_NO_CAMERA`
@@ -221,13 +234,16 @@ ls -l "$(go env GOPATH)/bin" | grep babu-cli
 
 Then add the correct bin path to `PATH` in `~/.zshrc`.
 
-### `access code file not set`
+### `access code not set`
 
 This means no access code source was resolved for the active profile.
 
 Resolution order:
+- `--access-code-stdin`
 - `--access-code-file`
+- `BAMBU_ACCESS_CODE`
 - `BAMBU_ACCESS_CODE_FILE`
+- `profiles.<name>.access_code`
 - `profiles.<name>.access_code_file`
 
 Profile selection order:
@@ -238,7 +254,7 @@ Profile selection order:
 Set it explicitly:
 
 ```bash
-babu-cli config set --printer lab --access-code-file ~/.config/bambu/lab.code --default
+babu-cli config set --ip 192.168.1.200 --serial AC12309BH109 --access-code YOUR_ACCESS_CODE
 ```
 
 ### Print starts but pauses with filament errors
@@ -256,4 +272,4 @@ Use `--no-ams` only when printing from an external spool/manual feed path that m
 ## Notes
 
 - Printer must be reachable on ports 8883 (MQTT), 990 (FTPS), 6000 (camera).
-- Avoid passing access codes via flags; use `--access-code-file` or `--access-code-stdin`.
+- `access_code` is stored as plain text in config when set directly.

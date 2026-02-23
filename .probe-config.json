@@ -1,0 +1,10 @@
+{
+  "default_profile": "default",
+  "profiles": {
+    "default": {
+      "ip": "192.168.11.234",
+      "serial": "0300DA610705389",
+      "access_code": "178f27a0"
+    }
+  }
+}

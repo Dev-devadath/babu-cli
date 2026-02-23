@@ -214,9 +214,22 @@ func resolvePrinter(gf GlobalFlags, needAccess bool, needSerial bool) (ResolvedP
 		ConfigPathUsed: userCfgPath,
 	}
 
-	accessFile := firstNonEmpty(gf.AccessCodeFile, os.Getenv("BAMBU_ACCESS_CODE_FILE"), profile.AccessCodeFile)
+	accessCode := ""
+	accessFile := ""
+	switch {
+	case gf.AccessCodeFile != "":
+		accessFile = gf.AccessCodeFile
+	case os.Getenv("BAMBU_ACCESS_CODE") != "":
+		accessCode = os.Getenv("BAMBU_ACCESS_CODE")
+	case os.Getenv("BAMBU_ACCESS_CODE_FILE") != "":
+		accessFile = os.Getenv("BAMBU_ACCESS_CODE_FILE")
+	case profile.AccessCode != "":
+		accessCode = profile.AccessCode
+	default:
+		accessFile = profile.AccessCodeFile
+	}
 	if needAccess {
-		code, err := resolveAccessCode(accessFile, gf.AccessCodeStdin)
+		code, err := resolveAccessCode(accessCode, accessFile, gf.AccessCodeStdin)
 		if err != nil {
 			return ResolvedPrinter{}, err
 		}
@@ -230,13 +243,13 @@ func resolvePrinter(gf GlobalFlags, needAccess bool, needSerial bool) (ResolvedP
 		return ResolvedPrinter{}, errors.New("missing printer serial; use --serial or config")
 	}
 	if needAccess && res.AccessCode == "" {
-		return ResolvedPrinter{}, errors.New("missing access code; use --access-code-file or --access-code-stdin")
+		return ResolvedPrinter{}, errors.New("missing access code; use config access_code, --access-code-file, or --access-code-stdin")
 	}
 
 	return res, nil
 }
 
-func resolveAccessCode(path string, fromStdin bool) (string, error) {
+func resolveAccessCode(inlineCode string, path string, fromStdin bool) (string, error) {
 	if fromStdin {
 		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
@@ -248,8 +261,15 @@ func resolveAccessCode(path string, fromStdin bool) (string, error) {
 		}
 		return code, nil
 	}
+	if inlineCode != "" {
+		code := strings.TrimSpace(inlineCode)
+		if code == "" {
+			return "", errors.New("inline access code is empty")
+		}
+		return code, nil
+	}
 	if path == "" {
-		return "", errors.New("access code file not set")
+		return "", errors.New("access code not set")
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -1226,6 +1246,7 @@ func cmdConfigSet(gf GlobalFlags, args []string) int {
 	profile := fs.String("printer", "", "profile name")
 	ip := fs.String("ip", "", "printer IP")
 	serial := fs.String("serial", "", "printer serial")
+	accessCode := fs.String("access-code", "", "access code")
 	accessFile := fs.String("access-code-file", "", "access code file")
 	username := fs.String("username", "", "username (default bblp)")
 	mqttPort := fs.Int("mqtt-port", 0, "mqtt port")
@@ -1237,22 +1258,36 @@ func cmdConfigSet(gf GlobalFlags, args []string) int {
 	if err := fs.Parse(args); err != nil {
 		return errExit(err)
 	}
-	if *profile == "" {
-		return errExit(errors.New("config set requires --printer"))
+	if *accessCode != "" && *accessFile != "" {
+		return errExit(errors.New("--access-code and --access-code-file are mutually exclusive"))
 	}
 	cfgPath, cfg, err := loadConfigForEdit(gf)
 	if err != nil {
 		return errExit(err)
 	}
-	p := cfg.Profiles[*profile]
+
+	profileName := firstNonEmpty(*profile, gf.Printer, os.Getenv("BAMBU_PROFILE"), cfg.DefaultProfile)
+	if profileName == "" {
+		profileName = "default"
+	}
+
+	p, existed := cfg.Profiles[profileName]
 	if *ip != "" {
 		p.IP = *ip
 	}
 	if *serial != "" {
 		p.Serial = *serial
 	}
+	if *accessCode != "" {
+		p.AccessCode = strings.TrimSpace(*accessCode)
+		if p.AccessCode == "" {
+			return errExit(errors.New("access code cannot be empty"))
+		}
+		p.AccessCodeFile = ""
+	}
 	if *accessFile != "" {
 		p.AccessCodeFile = *accessFile
+		p.AccessCode = ""
 	}
 	if *username != "" {
 		p.Username = *username
@@ -1272,9 +1307,25 @@ func cmdConfigSet(gf GlobalFlags, args []string) int {
 	if *noCamera {
 		p.NoCamera = true
 	}
-	cfg.Profiles[*profile] = p
-	if *defaultProfile {
-		cfg.DefaultProfile = *profile
+	if !existed {
+		missing := []string{}
+		if p.IP == "" {
+			missing = append(missing, "--ip")
+		}
+		if p.Serial == "" {
+			missing = append(missing, "--serial")
+		}
+		if p.AccessCode == "" && p.AccessCodeFile == "" {
+			missing = append(missing, "--access-code (or --access-code-file)")
+		}
+		if len(missing) > 0 {
+			return errExit(fmt.Errorf("creating profile %q requires %s", profileName, strings.Join(missing, ", ")))
+		}
+	}
+
+	cfg.Profiles[profileName] = p
+	if *defaultProfile || cfg.DefaultProfile == "" {
+		cfg.DefaultProfile = profileName
 	}
 
 	if err := config.Save(cfgPath, cfg); err != nil {
@@ -1364,6 +1415,8 @@ func lookupConfigValue(cfg config.Config, profileName, key string) any {
 		return p.IP
 	case "serial":
 		return p.Serial
+	case "access_code":
+		return p.AccessCode
 	case "access_code_file":
 		return p.AccessCodeFile
 	case "username":
@@ -1664,6 +1717,7 @@ func printCommandUsage(cmd string) {
 		fmt.Fprintln(os.Stdout, "USAGE: babu-cli reboot")
 	case "config":
 		fmt.Fprintln(os.Stdout, "USAGE: babu-cli config list|get|set|remove")
+		fmt.Fprintln(os.Stdout, "       babu-cli config set [--printer <name>] --ip <addr> --serial <serial> (--access-code <code> | --access-code-file <path>) [--default]")
 	default:
 		printUsage()
 	}

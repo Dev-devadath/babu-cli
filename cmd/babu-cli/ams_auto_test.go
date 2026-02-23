@@ -1,8 +1,12 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/Dev-devadath/babu-cli/internal/config"
 )
 
 func TestParseAMSMode(t *testing.T) {
@@ -132,5 +136,96 @@ func TestResolvePrintAMSSettings_NoAMSConflictsWithOn(t *testing.T) {
 	_, _, err := resolvePrintAMSSettings(ResolvedPrinter{}, amsModeOn, true, "")
 	if err == nil {
 		t.Fatal("expected conflict error, got nil")
+	}
+}
+
+func TestCmdConfigSetCreatesDefaultProfileFromMinimalInputs(t *testing.T) {
+	t.Setenv("BAMBU_PROFILE", "")
+
+	cfgPath := filepath.Join(t.TempDir(), "config.json")
+	rc := cmdConfigSet(GlobalFlags{ConfigPath: cfgPath}, []string{
+		"--ip", "192.168.1.200",
+		"--serial", "AC12309BH109",
+		"--access-code", "MYCODE",
+	})
+	if rc != 0 {
+		t.Fatalf("cmdConfigSet() = %d, want 0", rc)
+	}
+
+	cfg, err := config.Read(cfgPath)
+	if err != nil {
+		t.Fatalf("config.Read() error = %v", err)
+	}
+
+	if cfg.DefaultProfile != "default" {
+		t.Fatalf("DefaultProfile = %q, want %q", cfg.DefaultProfile, "default")
+	}
+
+	p, ok := cfg.Profiles["default"]
+	if !ok {
+		t.Fatalf("expected profile %q", "default")
+	}
+	if p.IP != "192.168.1.200" {
+		t.Fatalf("IP = %q, want %q", p.IP, "192.168.1.200")
+	}
+	if p.Serial != "AC12309BH109" {
+		t.Fatalf("Serial = %q, want %q", p.Serial, "AC12309BH109")
+	}
+	if p.AccessCode != "MYCODE" {
+		t.Fatalf("AccessCode = %q, want %q", p.AccessCode, "MYCODE")
+	}
+	if p.AccessCodeFile != "" {
+		t.Fatalf("AccessCodeFile = %q, want empty", p.AccessCodeFile)
+	}
+}
+
+func TestCmdConfigSetRequiresIPSerialAndAccessCodeForNewProfile(t *testing.T) {
+	t.Setenv("BAMBU_PROFILE", "")
+
+	cfgPath := filepath.Join(t.TempDir(), "config.json")
+	rc := cmdConfigSet(GlobalFlags{ConfigPath: cfgPath}, []string{
+		"--ip", "192.168.1.200",
+	})
+	if rc != 1 {
+		t.Fatalf("cmdConfigSet() = %d, want 1", rc)
+	}
+}
+
+func TestResolvePrinterPrefersAccessCodeFileFlagOverProfileAccessCode(t *testing.T) {
+	t.Setenv("BAMBU_PROFILE", "")
+	t.Setenv("BAMBU_ACCESS_CODE", "")
+	t.Setenv("BAMBU_ACCESS_CODE_FILE", "")
+
+	tmpDir := t.TempDir()
+	cfgPath := filepath.Join(tmpDir, "config.json")
+	accessCodePath := filepath.Join(tmpDir, "access.code")
+
+	if err := os.WriteFile(accessCodePath, []byte("FILECODE\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cfg := config.Config{
+		DefaultProfile: "default",
+		Profiles: map[string]config.Profile{
+			"default": {
+				IP:         "192.168.1.200",
+				Serial:     "AC12309BH109",
+				AccessCode: "PROFILECODE",
+			},
+		},
+	}
+	if err := config.Save(cfgPath, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	res, err := resolvePrinter(GlobalFlags{
+		ConfigPath:     cfgPath,
+		AccessCodeFile: accessCodePath,
+	}, true, true)
+	if err != nil {
+		t.Fatalf("resolvePrinter() error = %v", err)
+	}
+	if res.AccessCode != "FILECODE" {
+		t.Fatalf("AccessCode = %q, want %q", res.AccessCode, "FILECODE")
 	}
 }

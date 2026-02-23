@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"os"
@@ -10,6 +11,7 @@ import (
 type Profile struct {
 	IP             string `json:"ip,omitempty"`
 	Serial         string `json:"serial,omitempty"`
+	AccessCode     string `json:"access_code,omitempty"`
 	AccessCodeFile string `json:"access_code_file,omitempty"`
 	Username       string `json:"username,omitempty"`
 	NoCamera       bool   `json:"no_camera,omitempty"`
@@ -35,6 +37,17 @@ func Read(path string) (Config, error) {
 			return Empty(), nil
 		}
 		return Config{}, err
+	}
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 {
+		return Empty(), nil
+	}
+	// Accept UTF-8 BOM-prefixed JSON config files.
+	if bytes.HasPrefix(data, []byte{0xEF, 0xBB, 0xBF}) {
+		data = bytes.TrimSpace(bytes.TrimPrefix(data, []byte{0xEF, 0xBB, 0xBF}))
+		if len(data) == 0 {
+			return Empty(), nil
+		}
 	}
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
@@ -71,6 +84,9 @@ func mergeProfile(base Profile, override Profile) Profile {
 	}
 	if override.Serial != "" {
 		out.Serial = override.Serial
+	}
+	if override.AccessCode != "" {
+		out.AccessCode = override.AccessCode
 	}
 	if override.AccessCodeFile != "" {
 		out.AccessCodeFile = override.AccessCodeFile
